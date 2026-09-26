@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Behavior Analyzer",
+  title: "Video Analyzer",
   description: "See behavioral changes across face, eyes, voice, movement, and speech.",
 };
 

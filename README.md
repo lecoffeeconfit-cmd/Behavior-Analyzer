@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Behavior Analyzer
 
-## Getting Started
+Behavior Analyzer is a self-hosted Next.js + Python MVP for reviewing measurable changes across face, eyes, voice, movement, and speech. It uses temporary local storage only: there is no database, account history, external AI API, or permanent report storage.
 
-First, run the development server:
+## Local development
 
 ```bash
+npm install
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`. FFmpeg must be installed and available as `ffmpeg` / `ffprobe`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+docker build -t behavior-analyzer .
+docker run --rm -p 3000:3000 --env-file .env.example behavior-analyzer
+curl http://localhost:3000/api/health
+```
 
-## Learn More
+## Coolify
 
-To learn more about Next.js, take a look at the following resources:
+Use the repository Dockerfile. Set the exposed/public port to `3000`, enable HTTPS, and add the variables from `.env.example` as Coolify environment variables. Keep `/tmp` writable inside the container. A persistent volume is not required for the MVP because jobs are intentionally temporary.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The Python worker runs locally inside the container. `faster-whisper` downloads the selected local model on first use; this is a model artifact, not a paid AI API. If no model can be downloaded, the rest of the report still completes and the transcript is empty.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The analysis is intentionally cautious: signal changes are timestamped and compared with an earlier baseline, but they do not establish deception, honesty, intent, emotion, or mental state.

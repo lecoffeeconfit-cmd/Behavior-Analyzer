@@ -19,6 +19,18 @@
 
 # production
 /build
+/dist/
+/release/
+/apps/web/.next/
+/apps/web/next-env.d.ts
+/apps/web/public/models/
+/apps/web/public/wasm/
+/apps/web/public/vision-worker.js
+/apps/extension/public/models/
+/apps/extension/public/wasm/
+/packages/analysis/models/*.task
+/test-results/
+/playwright-report/
 
 # misc
 .DS_Store

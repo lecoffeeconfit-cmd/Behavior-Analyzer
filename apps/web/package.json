@@ -1,0 +1,20 @@
+{
+  "name": "@video-analyzer/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@video-analyzer/analysis": "1.0.0",
+    "@video-analyzer/shared": "1.0.0",
+    "@video-analyzer/ui": "1.0.0",
+    "next": "^16.4.2",
+    "pg": "^8.23.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "stripe": "^23.0.0"
+  }
+}

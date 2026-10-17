@@ -1,0 +1,1 @@
+{"name":"@video-analyzer/extension","version":"1.0.0","private":true,"dependencies":{"@video-analyzer/analysis":"1.0.0","@video-analyzer/shared":"1.0.0","@video-analyzer/ui":"1.0.0","react":"19.2.8","react-dom":"19.2.8"}}

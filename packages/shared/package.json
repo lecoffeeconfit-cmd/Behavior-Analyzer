@@ -1,0 +1,1 @@
+{"name":"@video-analyzer/shared","version":"1.0.0","private":true,"exports":{"./*":"./src/*.ts"}}

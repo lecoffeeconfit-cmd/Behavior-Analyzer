@@ -1,0 +1,23 @@
+[build]
+  base = "."
+  command = "npm run build:web"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Keep install at the repository root so npm resolves all shared workspaces.
+# Netlify detects the Next.js application from this package directory.
+[build.processing]
+  skip_processing = true
+
+[[headers]]
+  for = "/models/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/wasm/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

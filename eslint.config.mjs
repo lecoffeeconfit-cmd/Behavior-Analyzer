@@ -12,7 +12,15 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "**/.next/**",
+    "**/public/wasm/**",
+    "**/public/vision-worker.js",
+    "**/next-env.d.ts",
+    "dist/**",
   ]),
+  { settings: { next: { rootDir: "apps/web/" } } },
+  // Shared browser UI renders local blob/data frames and also runs outside Next.
+  { files: ["packages/ui/**"], rules: { "@next/next/no-img-element": "off" } },
 ]);
 
 export default eslintConfig;

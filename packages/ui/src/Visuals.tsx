@@ -23,7 +23,7 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.scan}</svg>;
 }
 
-export function Chart({ values, label, unit = "", color = "#a3f1ce", times = [] }: { values: Array<number | null>; label: string; unit?: string; color?: string; times?: number[] }) {
+export function Chart({ values, label, unit = "", color = "#88baff", times = [] }: { values: Array<number | null>; label: string; unit?: string; color?: string; times?: number[] }) {
   const finite = values.filter((v): v is number => v !== null && Number.isFinite(v));
   if (!finite.length) return <div className="chart-empty">No measured {label.toLowerCase()} data</div>;
   const min = Math.min(...finite), max = Math.max(...finite), span = Math.max(0.001, max - min);
@@ -41,7 +41,7 @@ const bodyEdges = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [
 export function LandmarkOverlay({ faces, poses }: { faces: FaceSample[]; poses: PoseSample[] }) {
   return <svg className="landmark-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Measured face and body landmarks over the selected sampled frame">
     {poses.map((pose) => <g key={pose.slot} stroke="#b4a7ff" strokeWidth="0.45" fill="#b4a7ff">{bodyEdges.filter(([a, b]) => (pose.points[a].visibility || 0) > 0.5 && (pose.points[b].visibility || 0) > 0.5).map(([a, b]) => <line key={`${a}-${b}`} x1={pose.points[a].x * 100} y1={pose.points[a].y * 100} x2={pose.points[b].x * 100} y2={pose.points[b].y * 100}/>)}{pose.points.filter((p) => (p.visibility || 0) > 0.5).map((p, i) => <circle key={i} cx={p.x * 100} cy={p.y * 100} r="0.6" stroke="none"/>)}</g>)}
-    {faces.map((face) => <g key={face.slot} stroke="#a3f1ce" fill="#a3f1ce" strokeWidth="0.35">{faceEdges.map(([a, b]) => <line key={`${a}-${b}`} x1={face.points[a].x * 100} y1={face.points[a].y * 100} x2={face.points[b].x * 100} y2={face.points[b].y * 100}/>)}{face.points.filter((_, i) => i % 7 === 0).map((p, i) => <circle key={i} cx={p.x * 100} cy={p.y * 100} r="0.25" stroke="none"/>)}</g>)}
+    {faces.map((face) => <g key={face.slot} stroke="#88baff" fill="#88baff" strokeWidth="0.35">{faceEdges.map(([a, b]) => <line key={`${a}-${b}`} x1={face.points[a].x * 100} y1={face.points[a].y * 100} x2={face.points[b].x * 100} y2={face.points[b].y * 100}/>)}{face.points.filter((_, i) => i % 7 === 0).map((p, i) => <circle key={i} cx={p.x * 100} cy={p.y * 100} r="0.25" stroke="none"/>)}</g>)}
   </svg>;
 }
 

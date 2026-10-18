@@ -1,10 +1,9 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+  ...tseslint.configs.recommended,
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -18,9 +17,9 @@ const eslintConfig = defineConfig([
     "**/next-env.d.ts",
     "dist/**",
   ]),
-  { settings: { next: { rootDir: "apps/web/" } } },
-  // Shared browser UI renders local blob/data frames and also runs outside Next.
-  { files: ["packages/ui/**"], rules: { "@next/next/no-img-element": "off" } },
+  { files: ["**/*.tsx"], plugins: { "react-hooks": reactHooks }, rules: reactHooks.configs.recommended.rules },
+  // Browser automation callbacks intentionally execute DOM APIs inside Node scripts.
+  { files: ["scripts/**/*.mjs"], rules: { "no-undef": "off" } },
 ]);
 
 export default eslintConfig;

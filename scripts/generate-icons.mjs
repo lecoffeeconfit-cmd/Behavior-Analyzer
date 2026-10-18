@@ -20,7 +20,7 @@ export async function generateIcons() {
       const bars = [[0.32, 0.39, 0.62], [0.46, 0.27, 0.73], [0.60, 0.35, 0.65]];
       const bright = bars.some(([left, top, bottom]) => u >= left && u <= left + 0.08 && v >= top && v <= bottom);
       const at = y * (size * 4 + 1) + 1 + x * 4;
-      const color = bright ? [166, 246, 211] : ring ? [63, 121, 112] : [15 + v * 8, 27 + v * 12, 33 + v * 10];
+      const color = bright ? [136, 186, 255] : ring ? [63, 91, 135] : [13 + v * 8, 23 + v * 12, 38 + v * 10];
       raw[at] = color[0]; raw[at + 1] = color[1]; raw[at + 2] = color[2]; raw[at + 3] = Math.round(alpha * 255);
     }
     const header = Buffer.alloc(13); header.writeUInt32BE(size, 0); header.writeUInt32BE(size, 4); header[8] = 8; header[9] = 6;

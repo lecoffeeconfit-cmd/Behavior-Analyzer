@@ -86,7 +86,7 @@ export function ProductApp({ platform }: { platform: ProductPlatform }) {
     const current = { id: crypto.randomUUID(), source, controller: new AbortController() }; run.current = current;
     let recorder: Awaited<ReturnType<typeof startAudioCapture>> | null = null;
     try {
-      if (withAudio && !source.protected) {
+      if (withAudio && seconds > 0 && !source.protected) {
         setStage(local ? "Preparing file audio" : "Choose the video tab & share its audio");
         if (local && videoRef.current?.paused) await videoRef.current.play();
         recorder = await startAudioCapture(local ? videoRef.current! : undefined);

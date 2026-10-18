@@ -14,7 +14,13 @@ function fixtureServer(port) {
     try {
       const name = new URL(req.url, "http://localhost").pathname === "/" ? "video-fixture.html" : new URL(req.url, "http://localhost").pathname.slice(1);
       if (!/^[a-zA-Z0-9_.-]+$/.test(name)) { res.writeHead(404); res.end(); return; }
-      const body = await readFile(join(fixtureDir, name)); res.writeHead(200, { "Content-Type": mime[extname(name)] || "application/octet-stream" }); res.end(body);
+      const body = await readFile(join(fixtureDir, name));
+      const range = req.headers.range?.match(/^bytes=(\d+)-(\d*)$/);
+      if (range) {
+        const start = Number(range[1]), end = Math.min(body.length - 1, range[2] ? Number(range[2]) : body.length - 1);
+        if (start > end) { res.writeHead(416); res.end(); return; }
+        res.writeHead(206, { "Content-Type": mime[extname(name)] || "application/octet-stream", "Content-Length": end - start + 1, "Content-Range": `bytes ${start}-${end}/${body.length}`, "Accept-Ranges": "bytes" }); res.end(body.subarray(start, end + 1));
+      } else { res.writeHead(200, { "Content-Type": mime[extname(name)] || "application/octet-stream", "Content-Length": body.length, "Accept-Ranges": "bytes" }); res.end(body); }
     } catch { res.writeHead(404); res.end(); }
   });
   return new Promise((resolve) => server.listen(port, "127.0.0.1", () => resolve(server)));
@@ -55,7 +61,7 @@ try {
   const web = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const webErrors = []; web.on("pageerror", (e) => webErrors.push(e.message));
   await web.goto("http://127.0.0.1:3000/");
-  await web.screenshot({ path: join(artifacts, "web-ready.png"), fullPage: true });
+  await web.screenshot({ path: join(artifacts, "web-ready.png"), fullPage: true, animations: "disabled" });
   await web.locator("input[type=file]").first().setInputFiles(join(fixtureDir, "video.webm"));
   await web.waitForFunction(() => document.querySelector("video")?.readyState >= 2);
   await web.getByLabel("Observation window").selectOption("0");
@@ -64,7 +70,7 @@ try {
   await web.getByRole("tab", { name: "Signals", exact: true }).click();
   assert.equal(await web.locator(".chart").count() >= 8, true, "Website must have actual face measurements, not just unavailable placeholders");
   await web.getByRole("tab", { name: "Overview", exact: true }).click();
-  await web.screenshot({ path: join(artifacts, "web-report.png"), fullPage: true });
+  await web.screenshot({ path: join(artifacts, "web-report.png"), fullPage: true, animations: "disabled" });
   await web.getByRole("tab", { name: "Authenticity", exact: true }).click();
   await web.getByText("Unavailable", { exact: true }).waitFor();
   await web.getByRole("button", { name: "Library" }).click();
@@ -75,7 +81,7 @@ try {
   assert.equal(await web.getByText("$2.99", { exact: false }).count() > 0, true);
   await web.setViewportSize({ width: 390, height: 844 });
   assert.equal(await web.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "Mobile UI must not overflow horizontally");
-  await web.screenshot({ path: join(artifacts, "web-mobile.png"), fullPage: true });
+  await web.screenshot({ path: join(artifacts, "web-mobile.png"), fullPage: true, animations: "disabled" });
   assert.deepEqual(webErrors, [], "No website page errors");
   console.log("PASS website: real local upload → model inference → report → authenticity → persistent history → responsive Pro view");
 
@@ -99,13 +105,14 @@ try {
   const source = found.data.videos[0];
   const captured = await panel.evaluate((source) => chrome.runtime.sendMessage({ type: "CAPTURE", source, runId: "smoke-snapshot", seconds: 0 }), source);
   assert.equal(captured.ok, true); assert.equal(captured.data.frames.length, 1); assert.equal(captured.data.transcript.length, 3);
+  await fixture.waitForFunction(() => { const video = document.querySelector("#first"); return video.seekable.length && video.seekable.end(0) >= 1; });
   const seek = await panel.evaluate((source) => chrome.runtime.sendMessage({ type: "SEEK", source, timestamp: 1 }), source);
-  assert.equal(seek.ok, true); assert.ok(Math.abs(await fixture.locator("#first").evaluate((v) => v.currentTime) - 1) < .2);
+  assert.equal(seek.ok, true, seek.error); assert.ok(Math.abs(await fixture.locator("#first").evaluate((v) => v.currentTime) - 1) < .2);
   const windowId = await panel.evaluate(async () => (await chrome.windows.getCurrent()).id);
   await panel.evaluate((windowId) => chrome.sidePanel.open({ windowId }), windowId);
   assert.equal((await panel.evaluate(() => chrome.sidePanel.getOptions({}))).path, "sidepanel.html");
   // Verify that ordinary tainted canvas restrictions remain in force.
-  await fixture.evaluate(() => { const v = document.createElement("video"); v.id = "cross"; v.src = "http://127.0.0.1:4178/video.webm"; v.controls = true; document.body.append(v); });
+  await fixture.evaluate(() => { const v = document.createElement("video"); v.id = "cross"; v.src = "http://localhost:4178/video.webm"; v.controls = true; document.body.append(v); });
   await fixture.waitForFunction(() => document.querySelector("#cross")?.readyState >= 2);
   const crossFound = await panel.evaluate((tabId) => chrome.runtime.sendMessage({ type: "DETECT", tabId }), tabId);
   const blocked = await panel.evaluate((source) => chrome.runtime.sendMessage({ type: "CAPTURE", source, runId: "smoke-cors", seconds: 0 }), crossFound.data.videos[2]);
@@ -123,10 +130,10 @@ try {
   await panel.getByRole("button", { name: "Analyze video", exact: true }).click();
   await panel.getByText("REPORT READY", { exact: true }).waitFor({ timeout: 100000 });
   await panel.getByRole("tab", { name: "Signals", exact: true }).click();
-  assert.ok(await panel.locator(".chart").count() >= 8, "MV3 CSP and packaged models must yield real face data");
-  await panel.screenshot({ path: join(artifacts, "extension-signals.png"), fullPage: true });
+  assert.ok(await panel.locator(".chart").count() >= 8, `MV3 CSP and packaged models must yield real face data. ${await panel.locator(".access-notes").textContent()}`);
+  await panel.screenshot({ path: join(artifacts, "extension-signals.png"), fullPage: true, animations: "disabled" });
   await panel.getByRole("tab", { name: "Overview", exact: true }).click();
-  await panel.screenshot({ path: join(artifacts, "extension-report.png"), fullPage: true });
+  await panel.screenshot({ path: join(artifacts, "extension-report.png"), fullPage: true, animations: "disabled" });
   assert.equal(await panel.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await panel.getByRole("button", { name: "Library" }).click(); await panel.locator(".history-card").waitFor();
   assert.deepEqual(extensionErrors, [], "No extension page errors");

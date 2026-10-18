@@ -31,6 +31,8 @@
 /packages/analysis/models/*.task
 /test-results/
 /playwright-report/
+/artifacts/
+/fixtures/video.webm
 
 # misc
 .DS_Store
@@ -52,3 +54,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local Netlify folder
+.netlify

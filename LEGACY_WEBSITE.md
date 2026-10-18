@@ -1,5 +1,7 @@
 # Behavior Analyzer
 
+Preserved original notes. The original UI is now at `apps/web/app/legacy` and `/legacy`, with its worker in `apps/web/analysis`. Use the browser-local homepage for normal website/extension use. To enable the older self-hosted workflow, install Python dependencies and FFmpeg, set an absolute `PYTHON_BIN` and `ENABLE_LEGACY_WORKER=true` in `apps/web/.env.local`, and run `npm run dev:web` from the repository root. Relative commands below describe the former layout.
+
 Behavior Analyzer is a self-hosted Next.js + Python MVP for reviewing measurable changes across face, eyes, voice, movement, and speech. It uses temporary local storage only: there is no database, account history, external AI API, or permanent report storage.
 
 ## Local development

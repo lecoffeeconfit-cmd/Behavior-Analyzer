@@ -12,7 +12,7 @@ export function analyzeVision(frames: CapturedFrame[], signal: AbortSignal, prog
       if (event.data.type === "progress") progress(event.data.progress, event.data.stage);
       if (event.data.type === "result") { cleanup(); resolve(event.data.result); }
     };
-    worker.onerror = () => { cleanup(); resolve({ faces: [], poses: [], warnings: ["The local vision worker could not start. Check Chrome's extension errors; captions and pixel measurements are retained."] }); };
+    worker.onerror = (error) => { cleanup(); resolve({ faces: [], poses: [], warnings: [`The local vision worker could not start: ${error.message || "unknown worker error"}. Captions and pixel measurements are retained.`] }); };
     if (signal.aborted) { abort(); return; }
     worker.postMessage({ frames, base });
   });

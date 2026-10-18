@@ -32,7 +32,7 @@ async function detect(tabId: number): Promise<{ videos: VideoSource[]; warnings:
 
 chrome.runtime.onMessage.addListener((message: PanelRequest, sender, respond) => {
   // Content scripts cannot invoke privileged operations or access saved reports/keys.
-  if (sender.id !== chrome.runtime.id || sender.tab || !sender.url?.startsWith(chrome.runtime.getURL(""))) return false;
+  if (sender.id !== chrome.runtime.id || !sender.url?.startsWith(chrome.runtime.getURL(""))) return false;
   if (!["DETECT", "CAPTURE", "CANCEL", "SEEK"].includes(message?.type)) return false;
   void (async () => {
     if (message.type === "DETECT") return detect(message.tabId);

@@ -20,7 +20,11 @@ self.onmessage = async (event: MessageEvent<{ frames: CapturedFrame[]; base: str
     } catch { result.warnings.push("The local pose model could not initialize. Body landmarks are unavailable."); }
     for (let index = 0; index < frames.length; index++) {
       const frame = frames[index];
-      const bitmap = await createImageBitmap(await (await fetch(frame.image)).blob());
+      // Decode in memory. Fetching a data: URL would require broadening the
+      // extension's connect-src policy even though no network is needed.
+      const encoded = frame.image.slice(frame.image.indexOf(",") + 1);
+      const bytes = Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
+      const bitmap = await createImageBitmap(new Blob([bytes], { type: "image/jpeg" }));
       try {
         const detected = face.detect(bitmap);
         // Spatial slots per frame, never biometric identity or persistent people tracking.
